@@ -1,4 +1,8 @@
+import { useState } from 'react';
+
 export default function Signup() {
+  const [passwordNotEqual, setPasswordNotEqual] = useState(false);
+
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -8,6 +12,11 @@ export default function Signup() {
     // checkbox 데이터 얻기
     const acquisitionChannel = fd.getAll('acquisition');
     formData.acquisition = acquisitionChannel;
+
+    if (formData.password !== formData['confirm-password']) {
+      setPasswordNotEqual(true);
+      return;
+    }
 
     console.log(formData);
     event.target.reset();
@@ -20,7 +29,7 @@ export default function Signup() {
 
       <div className="control">
         <label htmlFor="email">Email</label>
-        <input id="email" type="email" name="email" />
+        <input id="email" type="email" name="email" required minLength={6} />
       </div>
 
       <div className="control-row">
@@ -36,6 +45,10 @@ export default function Signup() {
             type="password"
             name="confirm-password"
           />
+
+          <div className="control-error">
+            {passwordNotEqual && <p>Passwords must match.</p>}
+          </div>
         </div>
       </div>
 
