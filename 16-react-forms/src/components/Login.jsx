@@ -8,7 +8,7 @@ export default function Login() {
     event.preventDefault();
 
     console.log(
-      `submitted :: ${email.current.value}, ${password.current.value}`
+      `submitted :: ${email.current.value}, ${password.current.value}`,
     );
   }
 
