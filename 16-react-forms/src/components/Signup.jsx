@@ -10,6 +10,7 @@ export default function Signup() {
     formData.acquisition = acquisitionChannel;
 
     console.log(formData);
+    event.target.reset();
   }
 
   return (
