@@ -6,6 +6,7 @@ import UserProgressContext from '../store/UserProgressContext';
 import Input from './UI/Input';
 import useHttp from '../hooks/useHttp';
 import Error from './UI/Error';
+import { useActionState } from 'react';
 
 const requestConfig = {
   method: 'POST',
@@ -18,7 +19,9 @@ export default function Checkout() {
   const cart = useContext(CartContext);
   const userProgressCtx = useContext(UserProgressContext);
 
-  const { data, error, loading, sendRequest, clearData } = useHttp(
+  const [formState, formAction, isPending] = useActionState(handleSubmit, null);
+
+  const { data, error, sendRequest, clearData } = useHttp(
     'http://localhost:3000/orders',
     requestConfig,
   );
@@ -40,10 +43,10 @@ export default function Checkout() {
     clearData();
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  async function handleSubmit(previousState, fd) {
+    // event.preventDefault();
 
-    const fd = new FormData(event.target);
+    // const fd = new FormData(event.target);
     const formData = Object.fromEntries(fd.entries());
 
     await sendRequest(
@@ -65,7 +68,7 @@ export default function Checkout() {
     </>
   );
 
-  if (loading) {
+  if (isPending) {
     actions = <span>Sending order data...</span>;
   }
 
@@ -92,7 +95,7 @@ export default function Checkout() {
     <Modal title="Checkout" open={open} onClose={handleCloseCheckout}>
       <p>Total Amount: ${totalAmount}</p>
 
-      <form onSubmit={handleSubmit}>
+      <form action={formAction}>
         <Input label="Full Name" id="name" type="text" />
         <Input label="E-Mail Address" id="email" type="email" />
         <Input label="Street" id="street" type="text" />
