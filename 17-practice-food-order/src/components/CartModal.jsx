@@ -1,58 +1,60 @@
-import { useEffect, useRef } from 'react';
+import { useContext } from 'react';
+import { currencyFormatter } from '../util/formatting';
+import Button from './UI/Button';
+import CartContext from '../store/CartContext';
+import Modal from './UI/Modal';
+import UserProgressContext from '../store/UserProgressContext';
 
-export default function CartModal({
-  open,
-  onClose,
-  cartItems,
-  onSubmit,
-  onChangeQt,
-}) {
-  const dialog = useRef();
+export default function CartModal() {
+  const { items, addItem, removeItem } = useContext(CartContext);
+  const userProgressCtx = useContext(UserProgressContext);
 
-  useEffect(() => {
-    if (open) {
-      dialog.current.showModal();
-    } else {
-      dialog.current.close();
-    }
-  }, [open]);
+  const open = userProgressCtx.progress === 'cart';
+
+  const totalAmount = items.reduce(
+    (prevValue, currValue) => prevValue + currValue.price * currValue.qt,
+    0,
+  );
+
+  function handleCloseCart() {
+    open && userProgressCtx.hideCart();
+  }
+
+  function handleSubmit() {
+    userProgressCtx.showCheckout();
+  }
 
   return (
-    <dialog className="modal cart" ref={dialog} onClose={onClose}>
-      <h2>Your Cart</h2>
+    <Modal
+      className="cart"
+      onClose={handleCloseCart}
+      open={open}
+      title="Your Cart"
+    >
       <ul>
-        {cartItems.map((cartItem) => (
+        {items.map((cartItem) => (
           <li key={cartItem.id} className="cart-item">
             <p>
-              {cartItem.name} - {cartItem.qt} x ${cartItem.price}
+              {cartItem.name} - {cartItem.qt} x
+              {currencyFormatter.format(cartItem.price)}
             </p>
             <div className="cart-item-actions">
-              <button onClick={() => onChangeQt(cartItem.id, cartItem.qt - 1)}>
-                -
-              </button>
+              <button onClick={() => removeItem(cartItem.id)}>-</button>
               <p>{cartItem.qt}</p>
-              <button onClick={() => onChangeQt(cartItem.id, cartItem.qt + 1)}>
-                +
-              </button>
+              <button onClick={() => addItem(cartItem)}>+</button>
             </div>
           </li>
         ))}
       </ul>
-      <div className="cart-total">
-        $
-        {cartItems.reduce(
-          (prevValue, currValue) => prevValue + currValue.price * currValue.qt,
-          0,
+      <div className="cart-total">{currencyFormatter.format(totalAmount)}</div>
+      <div className="modal-actions">
+        <Button textOnly onClick={handleCloseCart}>
+          Close
+        </Button>
+        {items.length > 0 && (
+          <Button onClick={handleSubmit}>Go to Checkout</Button>
         )}
       </div>
-      <div className="modal-actions">
-        <button className="text-button" onClick={onClose}>
-          Close
-        </button>
-        <button className="button" onClick={onSubmit}>
-          Go to Checkout
-        </button>
-      </div>
-    </dialog>
+    </Modal>
   );
 }

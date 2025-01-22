@@ -1,60 +1,76 @@
-import { useEffect, useRef } from 'react';
+import { useContext } from 'react';
+import Button from './UI/Button';
+import CartContext from '../store/CartContext';
+import Modal from './UI/Modal';
+import UserProgressContext from '../store/UserProgressContext';
+import Input from './UI/Input';
 
-export default function Checkout({ open, onClose, onSubmit, totalAmount }) {
-  const dialog = useRef();
+export default function Checkout() {
+  const cart = useContext(CartContext);
+  const userProgressCtx = useContext(UserProgressContext);
 
-  useEffect(() => {
-    if (open) {
-      dialog.current.showModal();
-    } else {
-      dialog.current.close();
-    }
-  }, [open]);
+  const open = userProgressCtx.progress === 'checkout';
 
-  function handleSubmit(event) {
+  const totalAmount = cart.items.reduce(
+    (prevValue, currItem) => prevValue + currItem.price * currItem.qt,
+    0,
+  );
+
+  function handleCloseCheckout() {
+    userProgressCtx.hideCheckout();
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const fd = new FormData(event.target);
     const formData = Object.fromEntries(fd.entries());
 
-    onSubmit(formData);
+    const response = await fetch('http://localhost:3000/orders', {
+      method: 'POST',
+      body: JSON.stringify({
+        order: {
+          items: cart.items,
+          customer: formData,
+        },
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message);
+      return;
+    }
+
+    alert('주문 성공');
+
+    cart.initItems();
+    userProgressCtx.hideCheckout();
   }
 
   return (
-    <dialog className="modal" ref={dialog} onClose={onClose}>
-      <h2>Checkout</h2>
+    <Modal title="Checkout" open={open} onClose={handleCloseCheckout}>
       <p>Total Amount: ${totalAmount}</p>
+
       <form onSubmit={handleSubmit}>
-        <div className="control">
-          <label htmlFor="name">Full Name</label>
-          <input id="name" name="name" type="text" />
-        </div>
-        <div className="control">
-          <label htmlFor="email">E-Mail Address</label>
-          <input id="email" name="email" type="text" />
-        </div>
-        <div className="control ">
-          <label htmlFor="street">Street</label>
-          <input id="street" name="street" type="text" />
-        </div>
+        <Input label="Full Name" id="name" type="text" />
+        <Input label="E-Mail Address" id="email" type="email" />
+        <Input label="Street" id="street" type="text" />
         <div className="control-row">
-          <div className="control">
-            <label htmlFor="postal-code">Postal-code</label>
-            <input id="postal-code" name="postal-code" type="text" />
-          </div>
-          <div className="control">
-            <label htmlFor="city">City</label>
-            <input id="city" name="city" type="text" />
-          </div>
+          <Input label="Postal-code" id="postal-code" type="text" />
+          <Input label="City" id="city" type="text" />
         </div>
 
         <div className="modal-actions">
-          <button className="text-button" onClick={onClose}>
+          <Button type="button" textOnly onClick={handleCloseCheckout}>
             Close
-          </button>
-          <button className="button">Submit order</button>
+          </Button>
+          <Button>Submit order</Button>
         </div>
       </form>
-    </dialog>
+    </Modal>
   );
 }

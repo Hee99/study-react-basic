@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react';
 import { MealItem } from './MealItem';
 
-export default function MealList({ onAddCart }) {
+export default function MealList() {
   const [meals, setMeals] = useState([]);
-
-  function handleAddCart(selectedId) {
-    const selectedItem = meals.find((cartItem) => cartItem.id === selectedId);
-    onAddCart(selectedItem);
-  }
 
   useEffect(() => {
     (async () => {
@@ -20,13 +15,13 @@ export default function MealList({ onAddCart }) {
 
       setMeals(resData);
     })();
-  });
+  }, []);
 
   return (
-    <div id="meals">
+    <ul id="meals">
       {meals.map((meal) => (
-        <MealItem key={meal.id} {...meal} onSelect={handleAddCart} />
+        <MealItem key={meal.id} meal={meal} />
       ))}
-    </div>
+    </ul>
   );
 }
