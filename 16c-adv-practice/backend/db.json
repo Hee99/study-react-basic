@@ -1,11 +1,18 @@
 {
   "opinions": [
     {
+      "id": 1741245301506,
+      "votes": 1,
+      "userName": "11111",
+      "title": "11111",
+      "body": "1111111111"
+    },
+    {
       "id": 1,
       "userName": "Maximilian Schwarzmüller",
       "title": "Do yourself a favor and learn React!",
       "body": "React is an amazing JavaScript library!\n\nDespite all it's shortcomings.",
-      "votes": 0
+      "votes": 1
     },
     {
       "id": 2,
